@@ -1,0 +1,25 @@
+.footer-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.header-container-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.header-container-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.font-title-letter-space {
+  letter-spacing: -0.02em;
+}
