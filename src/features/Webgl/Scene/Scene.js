@@ -125,7 +125,7 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
 
   useFrame((_, delta) => {
     if (!mounted.current) return;
-    updatePlanes(delta);
+    isDesktopOrLaptop && isHeightEnough && updatePlanes(delta);
   });
 
   useEffect(() => {

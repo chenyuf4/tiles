@@ -75,7 +75,9 @@ const AppHome = () => {
 
   return (
     <>
-      <CanvasBlock scrollPosRef={scrollPosRef} pageStateRef={pageStateRef} />
+      {isDesktopOrLaptop && isHeightEnough && (
+        <CanvasBlock scrollPosRef={scrollPosRef} pageStateRef={pageStateRef} />
+      )}
       <Home pageStateRef={pageStateRef} />
       <About />
       <HeaderBtn pageStateRef={pageStateRef} />
