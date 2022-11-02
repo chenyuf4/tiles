@@ -13,37 +13,19 @@ class ImagePlaneShaderMaterial extends ShaderMaterial {
       #define PI 3.1415926535897932384626433832795
       varying vec2 vUv;
       uniform float uStrength;
-      uniform float rStrength;
       uniform float boundary;
-      uniform float posX;
-      uniform float rotateDegree;
       varying float zOffset;
-      float zIndexFn(float inputVal) {
-        if (inputVal < 0.5) {
-          return 2.0 * inputVal * inputVal;
-        }
-        if (inputVal > 1.5) {
-          return 2.0 * (inputVal - 2.0) * (inputVal - 2.0);
-        }
-        return -1. + (4.0 - 2.0 * inputVal ) * inputVal;
+      float i(float m){
+        return m<.5?2.*m*m:-1.+(4.-2.*m)*m;
       }
       void main() {
-        float z = 0.;
-        if (abs(posX) <= boundary) {
-          z = (boundary - zIndexFn(abs(posX) / boundary) * boundary) * uStrength;
+        vec4 j=modelViewMatrix*vec4(position.xy,0.,1.);
+        float z=0.;
+        float k=abs(distance(j.x,0.));
+        if(k<boundary){
+          z=(boundary-i(k/boundary)*boundary)*uStrength;
         }
-        mat4 translationMatrix = mat4(vec4(1., 0., 0., 0.),
-        vec4(0., 1., 0., 0.),
-        vec4(0., 0., 1., 0.),
-        vec4(0., 0., z, 1.));
-
-        float rotateDegreeValue = rotateDegree * uStrength;
-        mat4 rotateMatrix =  mat4(vec4(cos(rotateDegreeValue), 0., sin(rotateDegreeValue), 0.),
-        vec4(0., 1., 0., 0.),
-        vec4(-sin(rotateDegreeValue), 0., cos(rotateDegreeValue), 0.0),
-        vec4(0., 0., 0., 1.));
-
-        gl_Position = projectionMatrix *  modelViewMatrix * translationMatrix * rotateMatrix * vec4(position.xy, 0.0, 1.0);
+        gl_Position=projectionMatrix * vec4(j.xy,j.z+z,j.w);
         vUv = uv;
         zOffset = min(z * 0.5, 0.7);
       }`,
@@ -66,9 +48,6 @@ class ImagePlaneShaderMaterial extends ShaderMaterial {
         tex: { value: null },
         uStrength: { value: 0 },
         boundary: { value: 0 },
-        rotateDegree: { value: 0 },
-        rStrength: { value: 0 },
-        posX: { value: 0 },
         planeDimension: {
           value: [
             ((IMAGE_BLOCK_WIDTH / IMAGE_BLOCK_HEIGHT) *
@@ -97,35 +76,12 @@ class ImagePlaneShaderMaterial extends ShaderMaterial {
     return this.uniforms.uStrength.value;
   }
 
-  set rStrength(value) {
-    this.uniforms.rStrength.value = value;
-  }
-
-  get rStrength() {
-    return this.uniforms.rStrength.value;
-  }
-
   set boundary(value) {
     this.uniforms.boundary.value = value;
   }
 
   get boundary() {
     return this.uniforms.boundary.value;
-  }
-
-  get rotateDegree() {
-    return this.uniforms.rotateDegree.value;
-  }
-  set rotateDegree(value) {
-    this.uniforms.rotateDegree.value = value;
-  }
-
-  get posX() {
-    return this.uniforms.posX.value;
-  }
-
-  set posX(value) {
-    this.uniforms.posX.value = value;
   }
 
   get planeDimension() {
@@ -138,3 +94,28 @@ class ImagePlaneShaderMaterial extends ShaderMaterial {
 }
 
 extend({ ImagePlaneShaderMaterial });
+//vertex: "precision highp float;
+// attribute vec2 a;
+// attribute vec2 b;
+// varying vec2 c;
+// varying float d;
+// uniform mat4 e;
+// uniform mat4 f;
+// uniform float g;
+// uniform float h;
+// float i(float m){return m<.5?2.*m*m:-1.+(4.-2.*m)*m;}
+// void main(){
+//   vec4 j=f*vec4(a,0.,1.);
+//   float z=0.;
+//   float k=abs(distance(j.x,0.));
+//   if(k<h){
+//     z=(h-i(k/h)*h)*g;
+//   }
+//   gl_Position=e*vec4(j.xy,j.z+z,j.w);c=b;d=min(z*.005,0.7);
+// }",
+//fragment: "precision highp float;
+//varying float d;
+//varying vec2 c;
+//uniform sampler2D tex;
+//uniform vec2 m;
+// /

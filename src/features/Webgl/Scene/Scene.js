@@ -32,7 +32,6 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
 
   const latencyValue = useRef({
     x: 0,
-    rotate: 0,
   });
   const boundary = 5.5 * IMAGE_BLOCK_WIDTH + 4.5 * IMAGE_GAP;
   const onWheelHandler = useCallback(
@@ -88,17 +87,21 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
       const imagesGroup = imageGroupRef.current.children;
 
       let latencyDiff = target - latency;
-      scrollPosRef.current.latency +=
-        latencyDiff * POS_LERP_FACTOR.LATENCY * deltaVal;
+      let newLatency =
+        latency + latencyDiff * POS_LERP_FACTOR.LATENCY * deltaVal;
+      if (Math.abs(newLatency - target) <= 0.01) {
+        newLatency = target;
+      }
+      scrollPosRef.current.latency = newLatency;
+
+      // when target and latency之间的差距较大，说明速度较快，所以接下来的latencyDiff就会大
+      // 那么latency.current.x的value就会大，导致ustrength比较大。然后慢慢速度降下来，
+      // 导致latencyValue趋近0，导致plane的旋转和z方向的唯一回归正常。
+      // 在useEffect要清空latencyValue = 0
       latencyValue.current.x +=
         (latencyDiff - latencyValue.current.x) *
         POS_LERP_FACTOR.LATENCY *
         deltaVal;
-      latencyValue.current.rotate = clamp(
-        scrollPosRef.current.latency / 10,
-        -0.5,
-        0.5
-      );
 
       const uStrength = Math.min(Math.abs(latencyValue.current.x) / 10, 0.5);
       // update images position
@@ -112,11 +115,8 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
             : 0,
           speed < 0 ? "L" : "R"
         );
-        imageMesh.material.uniforms.rotateDegree.value = targetRotateDegree;
+        imageMesh.rotation.y = -targetRotateDegree * uStrength;
         imageMesh.material.uniforms.uStrength.value = uStrength;
-        imageMesh.material.uniforms.rStrength.value =
-          latencyValue.current.rotate;
-        imageMesh.material.uniforms.posX.value = imageMesh.position.x;
       }
       scrollPosRef.current.current = newCurrentPos;
     },
@@ -132,6 +132,7 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
     window.addEventListener("wheel", onWheelHandler);
     return () => {
       window.removeEventListener("wheel", onWheelHandler);
+      latencyValue.current.x = 0;
     };
   }, [onWheelHandler]);
 
