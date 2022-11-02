@@ -80,7 +80,7 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
       const { current, target, latency } = scrollPosRef.current;
       let newCurrentPos =
         current + (target - current) * POS_LERP_FACTOR.SCROLL * deltaVal;
-      if (Math.abs(newCurrentPos - target) <= 0.01) {
+      if (Math.abs(newCurrentPos - target) <= 0.001) {
         newCurrentPos = target;
       }
       const speed = newCurrentPos - current;
@@ -89,9 +89,10 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
       let latencyDiff = target - latency;
       let newLatency =
         latency + latencyDiff * POS_LERP_FACTOR.LATENCY * deltaVal;
-      if (Math.abs(newLatency - target) <= 0.01) {
+      if (Math.abs(newLatency - target) <= 0.001) {
         newLatency = target;
       }
+
       scrollPosRef.current.latency = newLatency;
 
       // when target and latency之间的差距较大，说明速度较快，所以接下来的latencyDiff就会大
@@ -132,9 +133,10 @@ const Scene = ({ scrollPosRef, pageStateRef }) => {
     window.addEventListener("wheel", onWheelHandler);
     return () => {
       window.removeEventListener("wheel", onWheelHandler);
+      scrollPosRef.current.current = scrollPosRef.current.target;
       latencyValue.current.x = 0;
     };
-  }, [onWheelHandler]);
+  }, [onWheelHandler, scrollPosRef]);
 
   return (
     <group ref={imageGroupRef}>
